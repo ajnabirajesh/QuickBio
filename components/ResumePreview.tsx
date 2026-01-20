@@ -389,43 +389,54 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
     </div>
   );
 
-  // --- TEMPLATE 4: PROFESSIONAL ---
+  // --- TEMPLATE 4: PROFESSIONAL (UPGRADED) ---
   const ProfessionalTemplate = () => (
-    <div className={`${wrapperClass} p-12 text-slate-800`}>
-      <div className="flex justify-between items-center mb-10 pb-6 border-b-4 border-slate-900">
-        <div>
-          {data.name && <h1 className="text-4xl font-black tracking-tight leading-none mb-2 uppercase">{data.name}</h1>}
-          <div className="flex gap-4 text-xs font-bold text-slate-500 uppercase">
-             {data.contact && <span><i className="fas fa-phone-alt mr-1"></i> {data.contact}</span>}
-             {data.personalDetails.email && <span><i className="fas fa-envelope mr-1"></i> {data.personalDetails.email}</span>}
+    <div className={`${wrapperClass} text-slate-800 bg-white`}>
+      {/* Premium Header Bar */}
+      <div className="h-4 bg-slate-900 w-full"></div>
+      
+      <header className="px-12 pt-10 pb-8 border-b border-slate-100 flex justify-between items-end">
+        <div className="flex-1">
+          {data.name && <h1 className="text-5xl font-extrabold text-slate-900 tracking-tighter leading-none mb-4">{data.name}</h1>}
+          <div className="flex items-center gap-4 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+             {data.contact && <span><i className="fas fa-phone-alt text-indigo-600 mr-2"></i> {data.contact}</span>}
+             {data.personalDetails.email && <span><i className="fas fa-envelope text-indigo-600 mr-2"></i> {data.personalDetails.email}</span>}
           </div>
         </div>
         {data.photoUrl && (
-          <img src={data.photoUrl} className="w-24 h-24 object-cover rounded shadow-md border-2 border-white" />
+          <div className="w-32 h-32 rounded-xl overflow-hidden shadow-2xl border-4 border-white mb-[-20px] z-10">
+            <img src={data.photoUrl} className="w-full h-full object-cover" />
+          </div>
         )}
-      </div>
+      </header>
 
-      <div className="flex-1 grid grid-cols-3 gap-12 overflow-hidden">
-        <div className="col-span-2 space-y-8">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Main Body (Left) */}
+        <div className="flex-[1.8] p-12 pr-8 space-y-10 overflow-y-auto">
           {data.personalDetails.careerObjective && (
             <section>
-              <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-3 bg-slate-100 px-2 py-1 inline-block">Objective</h2>
-              <p className="text-sm leading-relaxed text-slate-600">{data.personalDetails.careerObjective}</p>
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-4 flex items-center gap-4">
+                Professional Summary <span className="h-px bg-slate-100 flex-1"></span>
+              </h2>
+              <p className="text-[14px] leading-relaxed text-slate-600 font-medium">{data.personalDetails.careerObjective}</p>
             </section>
           )}
 
           {data.workExperience.length > 0 && (
             <section>
-              <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-4 bg-slate-100 px-2 py-1 inline-block">Experience</h2>
-              <div className="space-y-6">
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-6 flex items-center gap-4">
+                Work History <span className="h-px bg-slate-100 flex-1"></span>
+              </h2>
+              <div className="space-y-8 relative pl-4 border-l-2 border-slate-50">
                 {data.workExperience.map(work => (
-                  <div key={work.id}>
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="font-bold text-slate-900 uppercase text-sm">{work.jobTitle}</h4>
-                      <span className="text-[10px] font-black text-slate-400">{work.duration}</span>
+                  <div key={work.id} className="relative">
+                    <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white shadow-sm"></div>
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-bold text-slate-900 text-base">{work.jobTitle}</h4>
+                      <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded">{work.duration}</span>
                     </div>
-                    <p className="text-xs text-indigo-600 font-bold mb-1">{work.company}</p>
-                    <p className="text-xs text-slate-500 leading-relaxed">{work.responsibilities}</p>
+                    <p className="text-xs text-indigo-600 font-bold mb-2 uppercase tracking-wide">{work.company}</p>
+                    <p className="text-[13px] text-slate-500 leading-relaxed italic">{work.responsibilities}</p>
                   </div>
                 ))}
               </div>
@@ -434,16 +445,21 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
 
           {data.education.length > 0 && (
             <section>
-              <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 mb-4 bg-slate-100 px-2 py-1 inline-block">Education</h2>
-              <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-6 flex items-center gap-4">
+                Academic Background <span className="h-px bg-slate-100 flex-1"></span>
+              </h2>
+              <div className="grid grid-cols-1 gap-6">
                 {data.education.map(edu => (
-                  <div key={edu.id} className="relative pl-6 border-l-2 border-slate-200">
+                  <div key={edu.id} className="bg-slate-50 p-4 rounded-lg border-l-4 border-slate-900">
                     <div className="flex justify-between items-center mb-1">
-                      <h4 className="font-bold text-slate-900">{edu.qualification}</h4>
+                      <h4 className="font-bold text-slate-900 text-sm">{edu.qualification}</h4>
                       <span className="text-[10px] font-black text-slate-400">{edu.year}</span>
                     </div>
-                    <p className="text-xs text-slate-500 font-medium">{edu.board}</p>
-                    <p className="text-[10px] font-bold text-slate-900 mt-1 uppercase">Grade: {edu.division}</p>
+                    <p className="text-xs text-slate-500 font-semibold">{edu.board}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-[9px] font-black text-white bg-slate-900 px-1.5 py-0.5 rounded uppercase">Score</span>
+                      <span className="text-[11px] font-bold text-slate-900">{edu.division}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -451,54 +467,96 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
           )}
         </div>
 
-        <div className="space-y-8">
-           {(data.personalDetails.fatherName || data.personalDetails.dob || data.personalDetails.aadhar || data.personalDetails.languages) && (
-             <section>
-                <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 mb-4">Background</h2>
-                <div className="space-y-3 text-[11px]">
-                   {data.personalDetails.fatherName && <div><p className="text-slate-400 font-bold uppercase text-[9px]">Father</p><p className="font-bold">{data.personalDetails.fatherName}</p></div>}
-                   {data.personalDetails.dob && <div><p className="text-slate-400 font-bold uppercase text-[9px]">DOB</p><p className="font-bold">{data.personalDetails.dob}</p></div>}
-                   {data.personalDetails.aadhar && <div><p className="text-slate-400 font-bold uppercase text-[9px]">Aadhar No</p><p className="font-bold">{data.personalDetails.aadhar}</p></div>}
-                   {data.personalDetails.maritalStatus && <div><p className="text-slate-400 font-bold uppercase text-[9px]">Status</p><p className="font-bold">{data.personalDetails.maritalStatus}</p></div>}
-                   {data.personalDetails.languages && <div><p className="text-slate-400 font-bold uppercase text-[9px]">Languages</p><p className="font-bold">{data.personalDetails.languages}</p></div>}
-                </div>
-             </section>
-           )}
+        {/* Sidebar (Right) */}
+        <aside className="flex-1 bg-slate-50/50 p-12 pl-8 border-l border-slate-100 space-y-10 overflow-y-auto">
+           <section>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.1em] text-slate-900 border-b-2 border-slate-900 pb-2 mb-6">Contact & Info</h2>
+              <div className="space-y-4 text-[12px]">
+                 {data.address && (
+                   <div className="flex gap-3">
+                     <i className="fas fa-map-marker-alt text-indigo-600 mt-1 shrink-0"></i>
+                     <p className="text-slate-600 font-medium">{data.address}</p>
+                   </div>
+                 )}
+                 {data.personalDetails.dob && (
+                   <div className="flex gap-3">
+                     <i className="fas fa-calendar-day text-indigo-600 mt-1 shrink-0"></i>
+                     <div>
+                       <p className="text-slate-400 text-[9px] font-black uppercase">Birth Date</p>
+                       <p className="text-slate-900 font-bold">{data.personalDetails.dob}</p>
+                     </div>
+                   </div>
+                 )}
+                 {data.personalDetails.aadhar && (
+                   <div className="flex gap-3">
+                     <i className="fas fa-id-card text-indigo-600 mt-1 shrink-0"></i>
+                     <div>
+                       <p className="text-slate-400 text-[9px] font-black uppercase">Aadhar Identification</p>
+                       <p className="text-slate-900 font-bold">{data.personalDetails.aadhar}</p>
+                     </div>
+                   </div>
+                 )}
+              </div>
+           </section>
 
            {data.skills.length > 0 && (
              <section>
-                <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 mb-4">Expertise</h2>
+                <h2 className="text-[11px] font-black uppercase tracking-[0.1em] text-slate-900 border-b-2 border-slate-900 pb-2 mb-6">Technical Skills</h2>
                 <div className="flex flex-wrap gap-2">
                   {data.skills.filter(s => s.trim()).map((s, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 bg-slate-900 text-white font-bold uppercase tracking-tighter rounded">{s}</span>
+                    <span key={i} className="text-[10px] px-3 py-1 bg-white border border-slate-200 text-slate-700 font-bold uppercase tracking-tight rounded shadow-sm">{s}</span>
                   ))}
                 </div>
              </section>
            )}
 
-           {data.personalDetails.hobbies && (
+           {(data.personalDetails.fatherName || data.personalDetails.languages || data.personalDetails.hobbies) && (
              <section>
-                <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-900 border-b-2 border-slate-900 mb-4">Hobbies</h2>
-                <p className="text-[11px] font-bold text-slate-700">{data.personalDetails.hobbies}</p>
+                <h2 className="text-[11px] font-black uppercase tracking-[0.1em] text-slate-900 border-b-2 border-slate-900 pb-2 mb-6">Metadata</h2>
+                <div className="space-y-4 text-[11px]">
+                   {data.personalDetails.fatherName && (
+                     <div>
+                       <p className="text-slate-400 font-bold uppercase text-[9px] mb-0.5">Father's Name</p>
+                       <p className="text-slate-800 font-bold">{data.personalDetails.fatherName}</p>
+                     </div>
+                   )}
+                   {data.personalDetails.languages && (
+                     <div>
+                       <p className="text-slate-400 font-bold uppercase text-[9px] mb-0.5">Languages Spoken</p>
+                       <p className="text-slate-800 font-bold">{data.personalDetails.languages}</p>
+                     </div>
+                   )}
+                   {data.personalDetails.hobbies && (
+                     <div>
+                       <p className="text-slate-400 font-bold uppercase text-[9px] mb-0.5">Personal Interests</p>
+                       <p className="text-slate-800 font-bold italic">{data.personalDetails.hobbies}</p>
+                     </div>
+                   )}
+                </div>
              </section>
            )}
+        </aside>
+      </div>
+
+      <div className="px-12 py-8 bg-slate-900 text-white">
+        <div className="flex justify-between items-start gap-12">
+          <div className="flex-1">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2">Legal Declaration</h3>
+            <p className="text-[11px] italic text-slate-400 leading-relaxed font-medium">
+              {data.declaration || "I hereby solemnly declare that all information provided in this document is accurate and truthful to the best of my personal knowledge and belief."}
+            </p>
+          </div>
+          <div className="w-48 flex flex-col items-center">
+             <div className="w-full h-px bg-slate-700 mb-3"></div>
+             <p className="text-[10px] font-black uppercase tracking-widest text-white mb-1">Authenticated By</p>
+             <p className="text-[12px] font-extrabold text-indigo-400">{data.name}</p>
+          </div>
+        </div>
+        <div className="mt-6 flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+           <span>Date: {data.date || currentDate}</span>
+           <span>Generated via QuickBio Professional</span>
         </div>
       </div>
-
-      <div className="mt-8 border-t border-slate-100 pt-6">
-        <h2 className="text-xs font-black uppercase text-slate-900 mb-2">Declaration</h2>
-        <p className="text-xs italic text-slate-600 leading-relaxed">{data.declaration || "I hereby declare that all the information given above is true and correct to the best of my knowledge and belief."}</p>
-      </div>
-
-      <footer className="mt-auto pt-8 flex justify-between items-end">
-         <div className="text-[10px] font-bold text-slate-400">
-           {data.date || currentDate} {data.personalDetails.jobLocation && `• ${data.personalDetails.jobLocation}`}
-         </div>
-         <div className="text-right">
-            <div className="w-40 h-px bg-slate-900 mb-2"></div>
-            <p className="text-[10px] font-black text-slate-900 uppercase">Authorised Signatory</p>
-         </div>
-      </footer>
     </div>
   );
 
