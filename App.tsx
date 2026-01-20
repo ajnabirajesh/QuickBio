@@ -17,99 +17,108 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Header */}
-      <header className="bg-indigo-900 text-white p-6 shadow-md no-print sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white p-2 rounded-lg">
-              <i className="fas fa-file-invoice text-indigo-900 text-2xl"></i>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      {/* Top Professional Navbar */}
+      <header className="glass-header text-white px-6 py-3 shadow-2xl no-print sticky top-0 z-50 border-b border-slate-700">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-indigo-600 p-2 rounded-xl shadow-inner">
+              <i className="fas fa-file-contract text-white text-xl"></i>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">QuickBio</h1>
-              <p className="text-indigo-200 text-xs">Professional Bio-Data Builder</p>
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-extrabold tracking-tight leading-none">QuickBio</h1>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Builder v2.0</span>
             </div>
           </div>
-          
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex flex-wrap items-center justify-center bg-indigo-800 rounded-full p-1 border border-indigo-700">
-               {[
-                 { id: 'elegant', label: 'Elegant' },
-                 { id: 'classic', label: 'Classic' },
-                 { id: 'modern', label: 'Modern' },
-                 { id: 'professional', label: 'Professional' }
-               ].map((t) => (
-                 <button 
-                  key={t.id}
-                  onClick={() => handleTemplateChange(t.id as TemplateType)}
-                  className={`px-3 py-1 rounded-full text-xs transition-all whitespace-nowrap ${resumeData.template === t.id ? 'bg-white text-indigo-900 font-bold shadow-sm' : 'text-indigo-200 hover:text-white'}`}
-                >
-                  {t.label}
-                </button>
-               ))}
-            </div>
 
-            <nav className="flex items-center gap-2">
+          {/* Center Template Picker */}
+          <div className="hidden lg:flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+            {[
+              { id: 'elegant', label: 'Elegant' },
+              { id: 'classic', label: 'Classic' },
+              { id: 'modern', label: 'Modern' },
+              { id: 'professional', label: 'Prof.' }
+            ].map((t) => (
               <button 
-                onClick={() => setShowPreview(false)}
-                className={`px-4 py-2 rounded-full transition-all text-sm ${!showPreview ? 'bg-white text-indigo-900 font-bold shadow-sm' : 'hover:bg-indigo-800'}`}
+                key={t.id}
+                onClick={() => handleTemplateChange(t.id as TemplateType)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${resumeData.template === t.id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
               >
-                <i className="fas fa-edit mr-2"></i> Edit
+                {t.label}
               </button>
-              <button 
-                onClick={() => setShowPreview(true)}
-                className={`px-4 py-2 rounded-full transition-all text-sm ${showPreview ? 'bg-white text-indigo-900 font-bold shadow-sm' : 'hover:bg-indigo-800'}`}
-              >
-                <i className="fas fa-eye mr-2"></i> Preview
-              </button>
-              <button 
-                onClick={handlePrint}
-                className="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-full shadow-lg transition-all transform hover:scale-105 text-sm font-bold ml-2"
-              >
-                <i className="fas fa-download mr-2"></i> Export
-              </button>
-            </nav>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-slate-800/50 p-1 rounded-xl border border-slate-700 lg:hidden">
+               <button onClick={() => setShowPreview(false)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!showPreview ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>Edit</button>
+               <button onClick={() => setShowPreview(true)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${showPreview ? 'bg-slate-700 text-white' : 'text-slate-400'}`}>View</button>
+            </div>
+            
+            <button 
+              onClick={handlePrint}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl shadow-lg transition-all active:scale-95 text-sm font-bold flex items-center gap-2"
+            >
+              <i className="fas fa-print"></i> 
+              <span className="hidden sm:inline">Export PDF</span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto mt-8 px-4 flex flex-col lg:flex-row gap-8">
-        <div className={`flex-1 ${showPreview ? 'hidden lg:block' : 'block'}`}>
-          <div className="sticky top-28">
+      {/* Workspace */}
+      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
+        {/* Left Side: Form Controls */}
+        <aside className={`lg:w-[450px] xl:w-[500px] border-r border-slate-200 bg-white overflow-y-auto no-print scroll-smooth ${showPreview ? 'hidden lg:block' : 'w-full block'}`}>
+          <div className="p-6">
             <ResumeForm data={resumeData} onChange={setResumeData} />
           </div>
-        </div>
+        </aside>
 
-        <div className={`flex-1 ${showPreview ? 'block' : 'hidden lg:block'}`}>
-          <div className="bg-white shadow-xl rounded-xl overflow-hidden mb-8 no-print lg:block hidden">
-             <div className="bg-gray-800 text-white px-4 py-2 flex justify-between items-center">
-                <span className="text-xs font-mono uppercase tracking-widest">
-                  Live View - {resumeData.template.toUpperCase()} Style
-                </span>
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-             </div>
+        {/* Right Side: Workbench Preview */}
+        <section className={`flex-1 workbench-bg bg-slate-100 overflow-y-auto p-4 md:p-12 transition-all ${showPreview ? 'block w-full' : 'hidden lg:block'}`}>
+          <div className="max-w-fit mx-auto relative group">
+            {/* Template Badge Float */}
+            <div className="absolute -top-6 left-0 right-0 flex justify-center no-print">
+               <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-700">
+                 Current: {resumeData.template}
+               </span>
+            </div>
+            
+            <div className="transform transition-transform duration-500 scale-[0.65] sm:scale-[0.85] md:scale-[0.95] xl:scale-100 origin-top">
+              <ResumePreview data={resumeData} />
+            </div>
           </div>
-          <ResumePreview data={resumeData} />
-        </div>
+        </section>
       </main>
 
-      {/* Mobile Nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden no-print z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <button onClick={() => setShowPreview(false)} className={`flex flex-col items-center gap-1 ${!showPreview ? 'text-indigo-600 font-bold' : 'text-gray-400'}`}>
-          <i className="fas fa-edit text-lg"></i><span className="text-[10px]">Form</span>
+      {/* Mobile Template Selector Drawer (Optional enhancement) */}
+      {!showPreview && (
+        <div className="lg:hidden fixed bottom-20 left-4 right-4 bg-white/80 backdrop-blur-md border border-slate-200 p-3 rounded-2xl shadow-2xl no-print flex justify-between gap-1">
+          {['elegant', 'classic', 'modern', 'professional'].map(t => (
+            <button 
+              key={t}
+              onClick={() => handleTemplateChange(t as TemplateType)}
+              className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all ${resumeData.template === t ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 bg-slate-50'}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Mobile Footer Nav */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 flex justify-around lg:hidden no-print z-50">
+        <button onClick={() => setShowPreview(false)} className={`flex flex-col items-center gap-1 transition-colors ${!showPreview ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <i className="fas fa-keyboard text-xl"></i><span className="text-[10px] font-bold uppercase">Editor</span>
         </button>
-        <button onClick={() => setShowPreview(true)} className={`flex flex-col items-center gap-1 ${showPreview ? 'text-indigo-600 font-bold' : 'text-gray-400'}`}>
-          <i className="fas fa-eye text-lg"></i><span className="text-[10px]">View</span>
+        <button onClick={() => setShowPreview(true)} className={`flex flex-col items-center gap-1 transition-colors ${showPreview ? 'text-indigo-600' : 'text-slate-400'}`}>
+          <i className="fas fa-eye text-xl"></i><span className="text-[10px] font-bold uppercase">Preview</span>
         </button>
-        <button onClick={handlePrint} className="flex flex-col items-center gap-1 text-green-600">
-          <i className="fas fa-download text-lg"></i><span className="text-[10px]">Print</span>
+        <button onClick={handlePrint} className="flex flex-col items-center gap-1 text-emerald-600">
+          <i className="fas fa-cloud-download-alt text-xl"></i><span className="text-[10px] font-bold uppercase">Save</span>
         </button>
-      </div>
+      </footer>
     </div>
   );
 };
