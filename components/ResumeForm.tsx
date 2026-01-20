@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ResumeData, Education } from '../types';
+import { ResumeData, Education, WorkExperience } from '../types';
 import { improveDeclaration, suggestLanguages } from '../services/geminiService';
 
 interface Props {
@@ -38,6 +38,39 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
   const removeEdu = (index: number) => {
     const newEdu = data.education.filter((_, i) => i !== index);
     onChange({ ...data, education: newEdu });
+  };
+
+  const updateWork = (index: number, field: keyof WorkExperience, value: string) => {
+    const newWork = [...data.workExperience];
+    newWork[index] = { ...newWork[index], [field]: value };
+    onChange({ ...data, workExperience: newWork });
+  };
+
+  const addWork = () => {
+    onChange({
+      ...data,
+      workExperience: [...data.workExperience, { id: Date.now().toString(), jobTitle: '', company: '', duration: '', responsibilities: '' }]
+    });
+  };
+
+  const removeWork = (index: number) => {
+    const newWork = data.workExperience.filter((_, i) => i !== index);
+    onChange({ ...data, workExperience: newWork });
+  };
+
+  const addSkill = () => {
+    updateField('skills', [...data.skills, '']);
+  };
+
+  const updateSkill = (index: number, value: string) => {
+    const newSkills = [...data.skills];
+    newSkills[index] = value;
+    updateField('skills', newSkills);
+  };
+
+  const removeSkill = (index: number) => {
+    const newSkills = data.skills.filter((_, i) => i !== index);
+    updateField('skills', newSkills);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,6 +165,96 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
         </div>
       </section>
 
+      {/* Work Experience */}
+      <section className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
+            <i className="fas fa-briefcase"></i> Work Experience
+          </h3>
+          <button 
+            onClick={addWork}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            + Add Experience
+          </button>
+        </div>
+        <div className="space-y-4">
+          {data.workExperience.map((work, idx) => (
+            <div key={work.id} className="p-4 bg-indigo-50 rounded-lg relative border border-indigo-100 space-y-3">
+               <button 
+                  onClick={() => removeWork(idx)} 
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input 
+                  placeholder="Job Title" 
+                  value={work.jobTitle} 
+                  onChange={(e) => updateWork(idx, 'jobTitle', e.target.value)}
+                  className="rounded border-gray-300 p-2 text-sm border bg-white"
+                />
+                <input 
+                  placeholder="Company" 
+                  value={work.company} 
+                  onChange={(e) => updateWork(idx, 'company', e.target.value)}
+                  className="rounded border-gray-300 p-2 text-sm border bg-white"
+                />
+                <input 
+                  placeholder="Duration (e.g. Jan 2020 - Present)" 
+                  value={work.duration} 
+                  onChange={(e) => updateWork(idx, 'duration', e.target.value)}
+                  className="rounded border-gray-300 p-2 text-sm border bg-white md:col-span-2"
+                />
+              </div>
+              <textarea 
+                placeholder="Key Responsibilities / Achievements" 
+                value={work.responsibilities} 
+                onChange={(e) => updateWork(idx, 'responsibilities', e.target.value)}
+                className="w-full rounded border-gray-300 p-2 text-sm border bg-white"
+                rows={2}
+              />
+            </div>
+          ))}
+          {data.workExperience.length === 0 && (
+            <p className="text-xs text-gray-400 italic text-center py-2">No work experience added yet.</p>
+          )}
+        </div>
+      </section>
+
+      {/* Skills */}
+      <section className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
+            <i className="fas fa-tools"></i> Skills
+          </h3>
+          <button 
+            onClick={addSkill}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            + Add Skill
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {data.skills.map((skill, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <input 
+                placeholder="Skill name (e.g. MS Office, Tally)" 
+                value={skill} 
+                onChange={(e) => updateSkill(idx, e.target.value)}
+                className="flex-1 rounded border-gray-300 p-2 text-sm border bg-white"
+              />
+              <button onClick={() => removeSkill(idx)} className="text-red-500 hover:text-red-700 p-1">
+                <i className="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          ))}
+          {data.skills.length === 0 && (
+             <p className="text-xs text-gray-400 italic text-center py-2 col-span-full">No skills added yet.</p>
+          )}
+        </div>
+      </section>
+
       {/* Education */}
       <section className="space-y-4">
         <div className="flex justify-between items-center">
@@ -152,26 +275,26 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
                 placeholder="Qualif." 
                 value={edu.qualification} 
                 onChange={(e) => updateEdu(idx, 'qualification', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border"
+                className="rounded border-gray-300 p-2 text-sm border bg-white"
               />
               <input 
                 placeholder="Board/Univ." 
                 value={edu.board} 
                 onChange={(e) => updateEdu(idx, 'board', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border md:col-span-2"
+                className="rounded border-gray-300 p-2 text-sm border bg-white md:col-span-2"
               />
               <input 
                 placeholder="Year" 
                 value={edu.year} 
                 onChange={(e) => updateEdu(idx, 'year', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border"
+                className="rounded border-gray-300 p-2 text-sm border bg-white"
               />
               <div className="flex items-center gap-1">
                 <input 
                   placeholder="Div." 
                   value={edu.division} 
                   onChange={(e) => updateEdu(idx, 'division', e.target.value)}
-                  className="rounded border-gray-300 p-2 text-sm border w-full"
+                  className="rounded border-gray-300 p-2 text-sm border bg-white w-full"
                 />
                 <button onClick={() => removeEdu(idx)} className="text-red-500 p-1">
                   <i className="fas fa-times"></i>

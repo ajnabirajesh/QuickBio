@@ -9,6 +9,14 @@ export interface Education {
   division: string;
 }
 
+export interface WorkExperience {
+  id: string;
+  jobTitle: string;
+  company: string;
+  duration: string;
+  responsibilities: string;
+}
+
 export interface PersonalDetails {
   fatherName: string;
   motherName: string;
@@ -25,6 +33,8 @@ export interface ResumeData {
   contact: string;
   photoUrl: string | null;
   education: Education[];
+  workExperience: WorkExperience[];
+  skills: string[];
   personalDetails: PersonalDetails;
   declaration: string;
   template: TemplateType;
@@ -40,6 +50,8 @@ export const INITIAL_DATA: ResumeData = {
     { id: '1', qualification: 'Matriculation', board: '', year: '', division: '' },
     { id: '2', qualification: 'Intermediate', board: '', year: '', division: '' }
   ],
+  workExperience: [],
+  skills: [],
   personalDetails: {
     fatherName: "",
     motherName: "",
