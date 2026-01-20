@@ -1,0 +1,7 @@
+{
+  "name": "QuickBio - Resume Builder",
+  "description": "A modern and professional bio-data and resume builder with AI enhancement features.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
