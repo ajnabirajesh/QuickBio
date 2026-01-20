@@ -13,13 +13,17 @@
                 size: A4;
                 margin: 0;
             }
+            html, body {
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
             .no-print {
                 display: none !important;
             }
             body {
                 background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -31,11 +35,12 @@
                 box-shadow: none !important;
                 border: none !important;
                 width: 210mm !important;
-                height: 297mm !important;
+                height: 296.5mm !important; /* Slightly less than 297mm to avoid triggering blank page */
                 margin: 0 auto !important;
-                padding: 10mm !important;
-                page-break-after: always;
+                page-break-inside: avoid;
+                page-break-after: avoid;
                 overflow: hidden;
+                box-sizing: border-box;
             }
         }
         /* UI Only Scroll fix */

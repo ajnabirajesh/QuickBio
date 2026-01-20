@@ -9,10 +9,13 @@ interface Props {
 const ResumePreview: React.FC<Props> = ({ data }) => {
   const currentDate = new Date().toLocaleDateString('en-GB');
 
+  // Common wrapper styles to ensure strict A4 fitting
+  const wrapperClass = "bg-white shadow-2xl mx-auto w-[210mm] h-[296.5mm] print-container border font-serif text-gray-900 overflow-hidden box-border flex flex-col";
+
   // --- TEMPLATE 1: CLASSIC ---
   const ClassicTemplate = () => (
-    <div className="bg-white p-6 md:p-10 shadow-2xl mx-auto w-[210mm] min-h-[296mm] print-container border font-serif text-gray-900 overflow-hidden box-border">
-      <div className="text-center mb-8">
+    <div className={`${wrapperClass} p-8 md:p-10`}>
+      <div className="text-center mb-6">
         <h1 className="text-2xl font-bold tracking-widest border-b-2 border-black inline-block px-6 pb-1 uppercase">Resume</h1>
       </div>
       <div className="flex justify-between items-start mb-4">
@@ -32,80 +35,83 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
       </div>
       <div className="w-full h-[1px] bg-black mb-6"></div>
 
-      {data.workExperience.length > 0 && (
+      <div className="flex-1 overflow-hidden">
+        {data.workExperience.length > 0 && (
+          <section className="mb-6">
+            <h3 className="text-lg font-bold underline mb-3">Work Experience:-</h3>
+            <div className="space-y-3">
+              {data.workExperience.map((work, idx) => (
+                <div key={work.id} className="text-sm">
+                  <p className="font-bold">{String(idx + 1).padStart(2, '0')}. {work.jobTitle} at {work.company}</p>
+                  <p className="italic font-semibold ml-6 text-[12px]">Duration: {work.duration}</p>
+                  <p className="ml-6 mt-0.5 whitespace-pre-wrap leading-tight">{work.responsibilities}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {data.skills.length > 0 && (
+          <section className="mb-6">
+            <h3 className="text-lg font-bold underline mb-2">Professional Skills:-</h3>
+            <p className="ml-4 font-medium italic text-sm">{data.skills.join(', ')}</p>
+          </section>
+        )}
+
         <section className="mb-6">
-          <h3 className="text-lg font-bold underline mb-3">Work Experience:-</h3>
-          <div className="space-y-3">
-            {data.workExperience.map((work, idx) => (
-              <div key={work.id} className="text-sm">
-                <p className="font-bold">{String(idx + 1).padStart(2, '0')}. {work.jobTitle} at {work.company}</p>
-                <p className="italic font-semibold ml-6 text-[12px]">Duration: {work.duration}</p>
-                <p className="ml-6 mt-0.5 whitespace-pre-wrap leading-tight">{work.responsibilities}</p>
+          <h3 className="text-lg font-bold underline mb-3">Education Qualification:-</h3>
+          <table className="w-full border-collapse border border-black text-[12px]">
+            <thead>
+              <tr>
+                <th className="border border-black p-1.5 w-10 text-center">S.No</th>
+                <th className="border border-black p-1.5 text-left">Examination Qualification</th>
+                <th className="border border-black p-1.5 text-left">Board/University</th>
+                <th className="border border-black p-1.5 text-center w-16">Year</th>
+                <th className="border border-black p-1.5 text-center w-16">Div.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.education.map((edu, idx) => (
+                <tr key={edu.id}>
+                  <td className="border border-black p-1.5 text-center">{idx + 1}</td>
+                  <td className="border border-black p-1.5">{edu.qualification}</td>
+                  <td className="border border-black p-1.5">{edu.board}</td>
+                  <td className="border border-black p-1.5 text-center">{edu.year}</td>
+                  <td className="border border-black p-1.5 text-center">{edu.division}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        
+        <section className="mb-6">
+          <h3 className="text-lg font-bold underline mb-3">Personal Details:-</h3>
+          <div className="space-y-1 text-sm">
+            {Object.entries({
+              "Father's Name": data.personalDetails.fatherName,
+              "Mother's Name": data.personalDetails.motherName,
+              "Date of Birth": data.personalDetails.dob,
+              "Marital Status": data.personalDetails.maritalStatus,
+              "Nationality": data.personalDetails.nationality,
+              "Language Known": data.personalDetails.languages,
+              "Job Location": data.personalDetails.jobLocation
+            }).map(([key, val]) => (
+              <div className="flex" key={key}>
+                <span className="w-36 font-semibold">{key}</span>
+                <span className="mr-3">:</span>
+                <span>{val}</span>
               </div>
             ))}
           </div>
         </section>
-      )}
-
-      {data.skills.length > 0 && (
         <section className="mb-6">
-          <h3 className="text-lg font-bold underline mb-2">Professional Skills:-</h3>
-          <p className="ml-4 font-medium italic text-sm">{data.skills.join(', ')}</p>
+          <h3 className="text-lg font-bold underline mb-2">Declaration:-</h3>
+          <p className="indent-8 leading-snug italic text-sm">{data.declaration}</p>
         </section>
-      )}
+      </div>
 
-      <section className="mb-6">
-        <h3 className="text-lg font-bold underline mb-3">Education Qualification:-</h3>
-        <table className="w-full border-collapse border border-black text-[12px]">
-          <thead>
-            <tr>
-              <th className="border border-black p-1.5 w-10 text-center">S.No</th>
-              <th className="border border-black p-1.5 text-left">Examination Qualification</th>
-              <th className="border border-black p-1.5 text-left">Board/University</th>
-              <th className="border border-black p-1.5 text-center w-16">Year</th>
-              <th className="border border-black p-1.5 text-center w-16">Div.</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.education.map((edu, idx) => (
-              <tr key={edu.id}>
-                <td className="border border-black p-1.5 text-center">{idx + 1}</td>
-                <td className="border border-black p-1.5">{edu.qualification}</td>
-                <td className="border border-black p-1.5">{edu.board}</td>
-                <td className="border border-black p-1.5 text-center">{edu.year}</td>
-                <td className="border border-black p-1.5 text-center">{edu.division}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-      
-      <section className="mb-6">
-        <h3 className="text-lg font-bold underline mb-3">Personal Details:-</h3>
-        <div className="space-y-1.5 text-sm">
-          {Object.entries({
-            "Father's Name": data.personalDetails.fatherName,
-            "Mother's Name": data.personalDetails.motherName,
-            "Date of Birth": data.personalDetails.dob,
-            "Marital Status": data.personalDetails.maritalStatus,
-            "Nationality": data.personalDetails.nationality,
-            "Language Known": data.personalDetails.languages,
-            "Job Location": data.personalDetails.jobLocation
-          }).map(([key, val]) => (
-            <div className="flex" key={key}>
-              <span className="w-36 font-semibold">{key}</span>
-              <span className="mr-3">:</span>
-              <span>{val}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-      <section className="mb-8">
-        <h3 className="text-lg font-bold underline mb-3">Declaration:-</h3>
-        <p className="indent-8 leading-snug italic text-sm">{data.declaration}</p>
-      </section>
-      <div className="mt-auto pt-10 flex justify-between items-end text-sm">
-        <div className="space-y-3">
+      <div className="mt-auto pt-4 flex justify-between items-end text-sm">
+        <div className="space-y-2">
           <p>Date: {currentDate}</p>
           <p>Place: .....................</p>
         </div>
@@ -119,7 +125,7 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
 
   // --- TEMPLATE 2: MODERN SIDEBAR ---
   const ModernTemplate = () => (
-    <div className="bg-white mx-auto w-[210mm] min-h-[296mm] print-container shadow-2xl flex font-sans text-gray-800 overflow-hidden box-border">
+    <div className="bg-white mx-auto w-[210mm] h-[296.5mm] print-container shadow-2xl flex font-sans text-gray-800 overflow-hidden box-border">
       {/* Sidebar */}
       <div className="w-1/3 bg-indigo-900 text-indigo-50 p-6 flex flex-col gap-6">
         <div className="text-center">
@@ -173,63 +179,65 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
           <h1 className="text-3xl font-black text-indigo-900 tracking-tight">RESUME</h1>
         </header>
 
-        {data.workExperience.length > 0 && (
+        <div className="flex-1 overflow-hidden">
+          {data.workExperience.length > 0 && (
+            <section className="mb-6">
+              <h3 className="text-md font-bold text-indigo-900 flex items-center gap-2 mb-3 border-l-4 border-indigo-900 pl-2">
+                <i className="fas fa-briefcase text-[12px]"></i> WORK EXPERIENCE
+              </h3>
+              <div className="space-y-3">
+                {data.workExperience.map((work) => (
+                  <div key={work.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start">
+                      <p className="font-bold text-indigo-900 text-[14px]">{work.jobTitle}</p>
+                      <p className="text-[10px] text-indigo-600 font-bold">{work.duration}</p>
+                    </div>
+                    <p className="font-semibold text-gray-700 text-[12px]">{work.company}</p>
+                    <p className="text-[11px] text-gray-600 whitespace-pre-wrap mt-1 leading-tight">{work.responsibilities}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="mb-6">
             <h3 className="text-md font-bold text-indigo-900 flex items-center gap-2 mb-3 border-l-4 border-indigo-900 pl-2">
-              <i className="fas fa-briefcase text-[12px]"></i> WORK EXPERIENCE
+              <i className="fas fa-graduation-cap text-[12px]"></i> EDUCATION
             </h3>
             <div className="space-y-3">
-              {data.workExperience.map((work) => (
-                <div key={work.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
-                  <div className="flex justify-between items-start">
-                    <p className="font-bold text-indigo-900 text-[14px]">{work.jobTitle}</p>
-                    <p className="text-[10px] text-indigo-600 font-bold">{work.duration}</p>
+              {data.education.map((edu) => (
+                <div key={edu.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                  <p className="font-bold text-indigo-900 text-[13px]">{edu.qualification}</p>
+                  <p className="text-[11px] text-gray-600 font-medium">{edu.board}</p>
+                  <div className="flex justify-between mt-1 text-[10px] font-bold text-indigo-600 uppercase">
+                    <span>Year: {edu.year}</span>
+                    <span>Division: {edu.division}</span>
                   </div>
-                  <p className="font-semibold text-gray-700 text-[12px]">{work.company}</p>
-                  <p className="text-[11px] text-gray-600 whitespace-pre-wrap mt-1 leading-tight">{work.responsibilities}</p>
                 </div>
               ))}
             </div>
           </section>
-        )}
 
-        <section className="mb-6">
-          <h3 className="text-md font-bold text-indigo-900 flex items-center gap-2 mb-3 border-l-4 border-indigo-900 pl-2">
-            <i className="fas fa-graduation-cap text-[12px]"></i> EDUCATION
-          </h3>
-          <div className="space-y-3">
-            {data.education.map((edu) => (
-              <div key={edu.id} className="bg-white p-3 rounded shadow-sm border border-gray-100">
-                <p className="font-bold text-indigo-900 text-[13px]">{edu.qualification}</p>
-                <p className="text-[11px] text-gray-600 font-medium">{edu.board}</p>
-                <div className="flex justify-between mt-1 text-[10px] font-bold text-indigo-600 uppercase">
-                  <span>Year: {edu.year}</span>
-                  <span>Division: {edu.division}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+          <section className="mb-6">
+            <h3 className="text-md font-bold text-indigo-900 flex items-center gap-2 mb-3 border-l-4 border-indigo-900 pl-2">
+              <i className="fas fa-id-card text-[12px]"></i> PERSONAL INFO
+            </h3>
+            <div className="grid grid-cols-1 gap-y-2 text-[12px]">
+              <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Father:</span> <span>{data.personalDetails.fatherName}</span></div>
+              <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Mother:</span> <span>{data.personalDetails.motherName}</span></div>
+              <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Location:</span> <span>{data.personalDetails.jobLocation}</span></div>
+            </div>
+          </section>
+        </div>
 
-        <section className="mb-6">
-          <h3 className="text-md font-bold text-indigo-900 flex items-center gap-2 mb-3 border-l-4 border-indigo-900 pl-2">
-            <i className="fas fa-id-card text-[12px]"></i> PERSONAL INFO
-          </h3>
-          <div className="grid grid-cols-1 gap-y-2 text-[12px]">
-            <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Father:</span> <span>{data.personalDetails.fatherName}</span></div>
-            <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Mother:</span> <span>{data.personalDetails.motherName}</span></div>
-            <div className="flex"><span className="w-24 font-bold text-indigo-900 uppercase text-[9px]">Location:</span> <span>{data.personalDetails.jobLocation}</span></div>
-          </div>
-        </section>
-
-        <section className="mt-auto border-t pt-4">
+        <section className="border-t pt-4">
           <h3 className="text-xs font-bold text-indigo-900 mb-1.5">DECLARATION</h3>
           <p className="text-[11px] italic text-gray-600 leading-tight">
             {data.declaration}
           </p>
         </section>
 
-        <div className="mt-6 flex justify-between items-end text-[10px] text-gray-500">
+        <div className="mt-4 flex justify-between items-end text-[10px] text-gray-500">
            <div>Date: {currentDate}</div>
            <div className="text-center">
               <div className="w-20 h-px border-b border-indigo-900 mb-1 mx-auto"></div>
@@ -242,7 +250,7 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
 
   // --- TEMPLATE 3: PROFESSIONAL GRID ---
   const ProfessionalTemplate = () => (
-    <div className="bg-white p-10 mx-auto w-[210mm] min-h-[296mm] print-container shadow-2xl font-sans text-slate-800 overflow-hidden box-border">
+    <div className="bg-white p-10 mx-auto w-[210mm] h-[296.5mm] print-container shadow-2xl font-sans text-slate-800 overflow-hidden box-border flex flex-col">
       <div className="flex items-center justify-between border-b-4 border-slate-800 pb-4 mb-6">
         <div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tighter mb-1 uppercase leading-none">{data.name || "YOUR NAME"}</h1>
@@ -256,7 +264,7 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="flex-1 overflow-hidden grid grid-cols-3 gap-6">
         <div className="col-span-2 space-y-6">
           
           {data.workExperience.length > 0 && (
@@ -343,7 +351,7 @@ const ResumePreview: React.FC<Props> = ({ data }) => {
         </div>
       </div>
 
-      <div className="mt-12 flex justify-between items-center py-4 border-t-2 border-slate-800">
+      <div className="mt-4 flex justify-between items-center py-4 border-t-2 border-slate-800">
          <div className="text-slate-400 text-[8px] font-black uppercase tracking-widest">
             Date: {currentDate}
          </div>
