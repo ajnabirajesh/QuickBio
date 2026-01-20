@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ResumeData, Education, WorkExperience } from '../types';
 import { improveDeclaration, suggestLanguages } from '../services/geminiService';
 
@@ -10,6 +10,7 @@ interface Props {
 
 const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateField = (field: keyof ResumeData, value: any) => {
     onChange({ ...data, [field]: value });
@@ -40,24 +41,6 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
     onChange({ ...data, education: newEdu });
   };
 
-  const updateWork = (index: number, field: keyof WorkExperience, value: string) => {
-    const newWork = [...data.workExperience];
-    newWork[index] = { ...newWork[index], [field]: value };
-    onChange({ ...data, workExperience: newWork });
-  };
-
-  const addWork = () => {
-    onChange({
-      ...data,
-      workExperience: [...data.workExperience, { id: Date.now().toString(), jobTitle: '', company: '', duration: '', responsibilities: '' }]
-    });
-  };
-
-  const removeWork = (index: number) => {
-    const newWork = data.workExperience.filter((_, i) => i !== index);
-    onChange({ ...data, workExperience: newWork });
-  };
-
   const addSkill = () => {
     updateField('skills', [...data.skills, '']);
   };
@@ -84,6 +67,13 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
     }
   };
 
+  const removePhoto = () => {
+    updateField('photoUrl', null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleAiImprove = async () => {
     setIsAiLoading(true);
     try {
@@ -104,283 +94,239 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg space-y-8">
-      <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Fill Details</h2>
+    <div className="bg-white p-8 rounded-2xl shadow-xl space-y-10 overflow-y-auto max-h-[85vh]">
+      <div className="flex justify-between items-center border-b pb-6">
+        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Bio-Data Details</h2>
         <button 
           onClick={handleAiImprove}
           disabled={isAiLoading}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
+          className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold shadow-md"
         >
           {isAiLoading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-magic"></i>}
           AI Polish
         </button>
       </div>
 
-      {/* Basic Info */}
-      <section className="space-y-4">
-        <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
-          <i className="fas fa-user"></i> Basic Info
+      {/* Profile Photo Section */}
+      <section className="space-y-5">
+        <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+          <i className="fas fa-camera"></i> Profile Photo
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-8">
+          <div className="relative group">
+            {data.photoUrl ? (
+              <img src={data.photoUrl} alt="Preview" className="w-28 h-28 rounded-xl object-cover border-4 border-indigo-50 shadow-md" />
+            ) : (
+              <div className="w-28 h-28 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <i className="fas fa-user-circle text-4xl text-gray-300"></i>
+              </div>
+            )}
+            {data.photoUrl && (
+              <button 
+                onClick={removePhoto}
+                className="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            )}
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Upload Profile Picture</label>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              onChange={handlePhotoUpload}
+              accept="image/*"
+              className="hidden"
+              id="photo-upload"
+            />
+            <label 
+              htmlFor="photo-upload"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-50 text-indigo-700 rounded-xl cursor-pointer hover:bg-indigo-100 transition-colors border-2 border-indigo-100 text-sm font-bold"
+            >
+              <i className="fas fa-upload"></i>
+              Choose Image
+            </label>
+            <p className="text-xs text-gray-500 mt-3 font-medium">Recommended: Portrait/Passport size (JPG or PNG)</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Header Info */}
+      <section className="space-y-5">
+        <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+          <i className="fas fa-user"></i> Header Details
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
             <input 
               type="text" 
               value={data.name} 
               onChange={(e) => updateField('name', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-              placeholder="e.g. SUMIT KUMAR"
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+            <input 
+              type="email" 
+              value={data.personalDetails.email} 
+              onChange={(e) => updatePersonal('email', e.target.value)}
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+              placeholder="example@mail.com"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1">Full Address</label>
+            <textarea 
+              value={data.address} 
+              onChange={(e) => updateField('address', e.target.value)}
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+              rows={2}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Phone</label>
             <input 
               type="text" 
               value={data.contact} 
               onChange={(e) => updateField('contact', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-              placeholder="e.g. 7903430792"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Permanent Address</label>
-            <textarea 
-              value={data.address} 
-              onChange={(e) => updateField('address', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-              rows={3}
-              placeholder="Village, Post, Dist, Pin..."
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Profile Photo</label>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Aadhar No.</label>
             <input 
-              type="file" 
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              type="text" 
+              value={data.personalDetails.aadhar} 
+              onChange={(e) => updatePersonal('aadhar', e.target.value)}
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
             />
           </div>
-        </div>
-      </section>
-
-      {/* Work Experience */}
-      <section className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
-            <i className="fas fa-briefcase"></i> Work Experience
-          </h3>
-          <button 
-            onClick={addWork}
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-          >
-            + Add Experience
-          </button>
-        </div>
-        <div className="space-y-4">
-          {data.workExperience.map((work, idx) => (
-            <div key={work.id} className="p-4 bg-indigo-50 rounded-lg relative border border-indigo-100 space-y-3">
-               <button 
-                  onClick={() => removeWork(idx)} 
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input 
-                  placeholder="Job Title" 
-                  value={work.jobTitle} 
-                  onChange={(e) => updateWork(idx, 'jobTitle', e.target.value)}
-                  className="rounded border-gray-300 p-2 text-sm border bg-white"
-                />
-                <input 
-                  placeholder="Company" 
-                  value={work.company} 
-                  onChange={(e) => updateWork(idx, 'company', e.target.value)}
-                  className="rounded border-gray-300 p-2 text-sm border bg-white"
-                />
-                <input 
-                  placeholder="Duration (e.g. Jan 2020 - Present)" 
-                  value={work.duration} 
-                  onChange={(e) => updateWork(idx, 'duration', e.target.value)}
-                  className="rounded border-gray-300 p-2 text-sm border bg-white md:col-span-2"
-                />
-              </div>
-              <textarea 
-                placeholder="Key Responsibilities / Achievements" 
-                value={work.responsibilities} 
-                onChange={(e) => updateWork(idx, 'responsibilities', e.target.value)}
-                className="w-full rounded border-gray-300 p-2 text-sm border bg-white"
-                rows={2}
-              />
-            </div>
-          ))}
-          {data.workExperience.length === 0 && (
-            <p className="text-xs text-gray-400 italic text-center py-2">No work experience added yet.</p>
-          )}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1">Current Date (for footer)</label>
+            <input 
+              type="text" 
+              value={data.date} 
+              onChange={(e) => updateField('date', e.target.value)}
+              placeholder="e.g. 20/01/2026"
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1">Career Objective</label>
+            <textarea 
+              value={data.personalDetails.careerObjective} 
+              onChange={(e) => updatePersonal('careerObjective', e.target.value)}
+              className="block w-full rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+              rows={2}
+            />
+          </div>
         </div>
       </section>
 
       {/* Skills */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
-            <i className="fas fa-tools"></i> Skills
+          <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+            <i className="fas fa-tools"></i> Technical Skills
           </h3>
-          <button 
-            onClick={addSkill}
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-          >
-            + Add Skill
-          </button>
+          <button onClick={addSkill} className="text-indigo-600 text-sm font-bold hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1 rounded-lg">+ Add Skill</button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-3">
           {data.skills.map((skill, idx) => (
-            <div key={idx} className="flex items-center gap-2">
+            <div key={idx} className="flex gap-3">
               <input 
-                placeholder="Skill name (e.g. MS Office, Tally)" 
                 value={skill} 
                 onChange={(e) => updateSkill(idx, e.target.value)}
-                className="flex-1 rounded border-gray-300 p-2 text-sm border bg-white"
+                className="flex-1 rounded-xl border-gray-200 p-3 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
+                placeholder="e.g. Photoshop, HTML, CSS"
               />
-              <button onClick={() => removeSkill(idx)} className="text-red-500 hover:text-red-700 p-1">
-                <i className="fas fa-trash-alt"></i>
-              </button>
+              <button onClick={() => removeSkill(idx)} className="text-red-500 hover:text-red-700 transition-colors p-2"><i className="fas fa-trash"></i></button>
             </div>
           ))}
-          {data.skills.length === 0 && (
-             <p className="text-xs text-gray-400 italic text-center py-2 col-span-full">No skills added yet.</p>
-          )}
         </div>
       </section>
 
       {/* Education */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
-            <i className="fas fa-graduation-cap"></i> Education Qualification
+          <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+            <i className="fas fa-graduation-cap"></i> Educational Qualifications
           </h3>
-          <button 
-            onClick={addEdu}
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-          >
-            + Add Education
-          </button>
+          <button onClick={addEdu} className="text-indigo-600 text-sm font-bold hover:text-indigo-800 transition-colors bg-indigo-50 px-3 py-1 rounded-lg">+ Add Edu</button>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {data.education.map((edu, idx) => (
-            <div key={edu.id} className="grid grid-cols-2 md:grid-cols-5 gap-2 p-3 bg-gray-50 rounded-lg relative">
-              <input 
-                placeholder="Qualif." 
-                value={edu.qualification} 
-                onChange={(e) => updateEdu(idx, 'qualification', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border bg-white"
-              />
-              <input 
-                placeholder="Board/Univ." 
-                value={edu.board} 
-                onChange={(e) => updateEdu(idx, 'board', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border bg-white md:col-span-2"
-              />
-              <input 
-                placeholder="Year" 
-                value={edu.year} 
-                onChange={(e) => updateEdu(idx, 'year', e.target.value)}
-                className="rounded border-gray-300 p-2 text-sm border bg-white"
-              />
-              <div className="flex items-center gap-1">
-                <input 
-                  placeholder="Div." 
-                  value={edu.division} 
-                  onChange={(e) => updateEdu(idx, 'division', e.target.value)}
-                  className="rounded border-gray-300 p-2 text-sm border bg-white w-full"
-                />
-                <button onClick={() => removeEdu(idx)} className="text-red-500 p-1">
-                  <i className="fas fa-times"></i>
-                </button>
+            <div key={edu.id} className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 relative group">
+              <input placeholder="Qual." value={edu.qualification} onChange={(e) => updateEdu(idx, 'qualification', e.target.value)} className="p-3 text-sm border-2 rounded-xl focus:border-indigo-500 outline-none" />
+              <input placeholder="Year" value={edu.year} onChange={(e) => updateEdu(idx, 'year', e.target.value)} className="p-3 text-sm border-2 rounded-xl focus:border-indigo-500 outline-none" />
+              <input placeholder="Board" value={edu.board} onChange={(e) => updateEdu(idx, 'board', e.target.value)} className="p-3 text-sm border-2 rounded-xl focus:border-indigo-500 outline-none" />
+              <div className="flex gap-2">
+                <input placeholder="%" value={edu.division} onChange={(e) => updateEdu(idx, 'division', e.target.value)} className="p-3 text-sm border-2 rounded-xl w-full focus:border-indigo-500 outline-none" />
+                <button onClick={() => removeEdu(idx)} className="text-red-500 hover:scale-110 transition-transform"><i className="fas fa-times-circle text-lg"></i></button>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Personal Details */}
-      <section className="space-y-4">
-        <h3 className="text-lg font-semibold text-indigo-700 flex items-center gap-2">
-          <i className="fas fa-id-card"></i> Personal Details
+      {/* Personal Section */}
+      <section className="space-y-5">
+        <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+          <i className="fas fa-info-circle"></i> Personal Details
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Father's Name</label>
-            <input 
-              type="text" 
-              value={data.personalDetails.fatherName} 
-              onChange={(e) => updatePersonal('fatherName', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">Father's Name</label>
+            <input placeholder="Father's Name" value={data.personalDetails.fatherName} onChange={(e) => updatePersonal('fatherName', e.target.value)} className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Mother's Name</label>
-            <input 
-              type="text" 
-              value={data.personalDetails.motherName} 
-              onChange={(e) => updatePersonal('motherName', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
-            />
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">DOB</label>
+            <input placeholder="Date of Birth" value={data.personalDetails.dob} onChange={(e) => updatePersonal('dob', e.target.value)} className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-            <input 
-              type="text" 
-              value={data.personalDetails.dob} 
-              onChange={(e) => updatePersonal('dob', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
-              placeholder="DD/MM/YYYY"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Marital Status</label>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">Marital Status</label>
             <select 
               value={data.personalDetails.maritalStatus} 
-              onChange={(e) => updatePersonal('maritalStatus', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
+              onChange={(e) => updatePersonal('maritalStatus', e.target.value)} 
+              className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none bg-white font-medium"
             >
-              <option value="Unmarried">Unmarried</option>
+              <option value="">Select Status</option>
+              <option value="Single">Single</option>
               <option value="Married">Married</option>
+              <option value="Unmarried">Unmarried</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Languages Known</label>
-            <input 
-              type="text" 
-              value={data.personalDetails.languages} 
-              onChange={(e) => updatePersonal('languages', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
-              placeholder="Hindi, English..."
-            />
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">Languages Known</label>
+            <input placeholder="Languages Known" value={data.personalDetails.languages} onChange={(e) => updatePersonal('languages', e.target.value)} className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Job Location Preference</label>
-            <input 
-              type="text" 
-              value={data.personalDetails.jobLocation} 
-              onChange={(e) => updatePersonal('jobLocation', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 p-2 border"
-              placeholder="All India"
-            />
+          <div className="md:col-span-2 space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">Place (City, State)</label>
+            <input placeholder="Place (e.g. Supaul, Bihar)" value={data.personalDetails.jobLocation} onChange={(e) => updatePersonal('jobLocation', e.target.value)} className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none" />
+          </div>
+          <div className="md:col-span-2 space-y-1">
+            <label className="text-xs font-bold text-gray-500 ml-1">Hobbies</label>
+            <textarea placeholder="Hobbies (e.g. Designing, Coding)" value={data.personalDetails.hobbies} onChange={(e) => updatePersonal('hobbies', e.target.value)} className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none" rows={2} />
           </div>
         </div>
       </section>
 
       {/* Declaration */}
-      <section className="space-y-4">
-        <h3 className="text-lg font-semibold text-indigo-700">Declaration</h3>
+      <section className="space-y-5">
+        <h3 className="text-xl font-bold text-indigo-700 flex items-center gap-2">
+          <i className="fas fa-file-contract"></i> Declaration
+        </h3>
         <textarea 
           value={data.declaration} 
           onChange={(e) => updateField('declaration', e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+          className="w-full rounded-xl border-gray-200 p-4 border-2 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"
           rows={3}
+          placeholder="I hereby declare that the details provided above are true..."
         />
       </section>
     </div>

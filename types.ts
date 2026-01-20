@@ -1,12 +1,12 @@
 
-export type TemplateType = 'classic' | 'modern' | 'professional';
+export type TemplateType = 'classic' | 'modern' | 'professional' | 'elegant';
 
 export interface Education {
   id: string;
   qualification: string;
   board: string;
   year: string;
-  division: string;
+  division: string; // Used for "Percentage" in some templates
 }
 
 export interface WorkExperience {
@@ -25,12 +25,17 @@ export interface PersonalDetails {
   nationality: string;
   languages: string;
   jobLocation: string;
+  aadhar: string;
+  email: string;
+  hobbies: string;
+  careerObjective: string;
 }
 
 export interface ResumeData {
   name: string;
   address: string;
   contact: string;
+  date: string;
   photoUrl: string | null;
   education: Education[];
   workExperience: WorkExperience[];
@@ -44,22 +49,24 @@ export const INITIAL_DATA: ResumeData = {
   name: "",
   address: "",
   contact: "",
+  date: new Date().toLocaleDateString('en-GB'),
   photoUrl: null,
-  template: 'classic',
-  education: [
-    { id: '1', qualification: 'Matriculation', board: '', year: '', division: '' },
-    { id: '2', qualification: 'Intermediate', board: '', year: '', division: '' }
-  ],
+  template: 'elegant',
+  education: [],
   workExperience: [],
   skills: [],
   personalDetails: {
     fatherName: "",
     motherName: "",
     dob: "",
-    maritalStatus: "Unmarried",
+    maritalStatus: "",
     nationality: "Indian",
-    languages: "Hindi & English",
-    jobLocation: "All India"
+    languages: "",
+    jobLocation: "",
+    aadhar: "",
+    email: "",
+    hobbies: "",
+    careerObjective: ""
   },
-  declaration: "I hereby declare that all the information given above by me is true to the best of my Knowledge."
+  declaration: ""
 };
