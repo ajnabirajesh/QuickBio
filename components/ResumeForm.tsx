@@ -8,19 +8,20 @@ interface Props {
   onChange: (data: ResumeData) => void;
 }
 
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">
+    {children}
+  </label>
+);
+
 const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updateField = (field: keyof ResumeData, value: any) => {
-    onChange({ ...data, [field]: value });
-  };
-
+  const updateField = (field: keyof ResumeData, value: any) => onChange({ ...data, [field]: value });
+  
   const updatePersonal = (field: keyof ResumeData['personalDetails'], value: string) => {
-    onChange({
-      ...data,
-      personalDetails: { ...data.personalDetails, [field]: value }
-    });
+    onChange({ ...data, personalDetails: { ...data.personalDetails, [field]: value } });
   };
 
   const updateEdu = (index: number, field: keyof Education, value: string) => {
@@ -30,48 +31,39 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
   };
 
   const addEdu = () => {
-    onChange({
-      ...data,
-      education: [...data.education, { id: Date.now().toString(), qualification: '', board: '', year: '', division: '' }]
-    });
+    onChange({ ...data, education: [...data.education, { id: Date.now().toString(), qualification: '', board: '', year: '', division: '' }] });
   };
 
   const removeEdu = (index: number) => {
-    const newEdu = data.education.filter((_, i) => i !== index);
-    onChange({ ...data, education: newEdu });
+    onChange({ ...data, education: data.education.filter((_, i) => i !== index) });
   };
 
-  const addSkill = () => {
-    updateField('skills', [...data.skills, '']);
+  const updateWork = (index: number, field: keyof WorkExperience, value: string) => {
+    const newWork = [...data.workExperience];
+    newWork[index] = { ...newWork[index], [field]: value };
+    onChange({ ...data, workExperience: newWork });
   };
 
-  const updateSkill = (index: number, value: string) => {
-    const newSkills = [...data.skills];
-    newSkills[index] = value;
-    updateField('skills', newSkills);
+  const addWork = () => {
+    onChange({ ...data, workExperience: [...data.workExperience, { id: Date.now().toString(), jobTitle: '', company: '', duration: '', responsibilities: '' }] });
   };
 
-  const removeSkill = (index: number) => {
-    const newSkills = data.skills.filter((_, i) => i !== index);
-    updateField('skills', newSkills);
+  const removeWork = (index: number) => {
+    onChange({ ...data, workExperience: data.workExperience.filter((_, i) => i !== index) });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        updateField('photoUrl', reader.result as string);
-      };
+      reader.onloadend = () => updateField('photoUrl', reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const removePhoto = () => {
-    updateField('photoUrl', null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const handleSkillsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const skillsArray = e.target.value.split(',').map(s => s.trim());
+    updateField('skills', skillsArray);
   };
 
   const handleAiImprove = async () => {
@@ -86,234 +78,255 @@ const ResumeForm: React.FC<Props> = ({ data, onChange }) => {
         declaration: newDecl.trim(),
         personalDetails: { ...data.personalDetails, languages: newLangs.trim() }
       });
-    } catch (err) {
-      console.error(err);
     } finally {
       setIsAiLoading(false);
     }
   };
 
+  const inputStyle = "w-full bg-white border border-gray-300 rounded-md p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all";
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Bio-Data</h2>
-          <p className="text-slate-500 text-xs font-medium">Fill in your details to auto-generate</p>
-        </div>
-        <button 
-          onClick={handleAiImprove}
-          disabled={isAiLoading}
-          className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-xs shadow-xl shadow-slate-200"
-        >
-          {isAiLoading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-magic"></i>}
-          AI Polish
-        </button>
+    <div className="space-y-8 pb-10">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Resume Builder</h2>
+        <p className="text-sm text-gray-500 mt-1">Fill in the sections below to complete your bio-data.</p>
       </div>
 
-      {/* Section Wrapper Style */}
       <div className="space-y-6">
         
-        {/* Profile Card */}
-        <section className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <i className="fas fa-camera text-indigo-500"></i> Profile Image
-          </h3>
-          <div className="flex items-center gap-6">
-            <div className="relative group">
+        {/* Photo Upload */}
+        <section className="simple-card p-6">
+          <Label>Profile Picture</Label>
+          <div className="flex items-center gap-4 mt-2">
+            <div className="w-20 h-20 rounded-md border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center shrink-0">
               {data.photoUrl ? (
-                <img src={data.photoUrl} alt="Preview" className="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-xl group-hover:brightness-90 transition-all" />
+                <img src={data.photoUrl} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-24 h-24 rounded-2xl bg-white border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300">
-                  <i className="fas fa-user-plus text-2xl"></i>
-                </div>
-              )}
-              {data.photoUrl && (
-                <button 
-                  onClick={removePhoto}
-                  className="absolute -top-2 -right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                >
-                  <i className="fas fa-times text-[10px]"></i>
-                </button>
+                <i className="fas fa-user text-gray-300 text-3xl"></i>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 space-y-2">
               <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" id="photo-upload" />
-              <label htmlFor="photo-upload" className="block w-full text-center py-2.5 bg-white text-slate-700 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs font-black uppercase shadow-sm">
-                Pick Image
+              <label htmlFor="photo-upload" className="inline-block px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded cursor-pointer transition-colors">
+                Change Photo
               </label>
-              <p className="text-[10px] text-slate-400 mt-2 text-center font-bold">Square or Portrait works best</p>
+              {data.photoUrl && (
+                <button onClick={() => updateField('photoUrl', null)} className="ml-2 text-xs text-red-600 font-bold hover:underline">Remove</button>
+              )}
             </div>
           </div>
         </section>
 
-        {/* Basic Info */}
-        <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <i className="fas fa-address-card text-indigo-500"></i> Basic Information
-          </h3>
-          <div className="space-y-4">
+        {/* Identity Section */}
+        <section className="simple-card p-6 space-y-4">
+          <div>
+            <Label>Full Name</Label>
+            <input 
+              type="text" 
+              value={data.name} 
+              onChange={(e) => updateField('name', e.target.value)}
+              className={inputStyle}
+              placeholder="e.g. Rahul Sharma"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Full Name</label>
+              <Label>Mobile Number</Label>
               <input 
                 type="text" 
-                value={data.name} 
-                onChange={(e) => updateField('name', e.target.value)}
-                className="block w-full bg-slate-50 rounded-xl border-transparent p-3 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                placeholder="Raj Kumar"
+                value={data.contact} 
+                onChange={(e) => updateField('contact', e.target.value)}
+                className={inputStyle}
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Phone</label>
-                <input 
-                  type="text" 
-                  value={data.contact} 
-                  onChange={(e) => updateField('contact', e.target.value)}
-                  className="block w-full bg-slate-50 rounded-xl border-transparent p-3 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                  placeholder="+91..."
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Email</label>
-                <input 
-                  type="email" 
-                  value={data.personalDetails.email} 
-                  onChange={(e) => updatePersonal('email', e.target.value)}
-                  className="block w-full bg-slate-50 rounded-xl border-transparent p-3 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                  placeholder="raj@example.com"
-                />
-              </div>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Address</label>
-              <textarea 
-                value={data.address} 
-                onChange={(e) => updateField('address', e.target.value)}
-                className="block w-full bg-slate-50 rounded-xl border-transparent p-3 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                rows={2}
-                placeholder="123 Street, City..."
+              <Label>Email Address</Label>
+              <input 
+                type="email" 
+                value={data.personalDetails.email} 
+                onChange={(e) => updatePersonal('email', e.target.value)}
+                className={inputStyle}
               />
             </div>
           </div>
-        </section>
-
-        {/* Professional Details */}
-        <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <i className="fas fa-tools text-indigo-500"></i> Skills & Capabilities
-            </h3>
-            <button onClick={addSkill} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase">+ Add New</button>
-          </div>
-          <div className="grid grid-cols-1 gap-2">
-            {data.skills.map((skill, idx) => (
-              <div key={idx} className="flex gap-2 group">
-                <input 
-                  value={skill} 
-                  onChange={(e) => updateSkill(idx, e.target.value)}
-                  className="flex-1 bg-slate-50 rounded-xl border-transparent p-2 text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 outline-none"
-                  placeholder="Photoshop, Team Lead..."
-                />
-                <button onClick={() => removeSkill(idx)} className="text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><i className="fas fa-trash-alt"></i></button>
-              </div>
-            ))}
-            {data.skills.length === 0 && <p className="text-[10px] text-slate-400 font-bold italic text-center py-2">No skills added yet</p>}
+          <div>
+            <Label>Full Address</Label>
+            <textarea 
+              value={data.address} 
+              onChange={(e) => updateField('address', e.target.value)}
+              className={inputStyle}
+              rows={2}
+            />
           </div>
         </section>
 
-        {/* Educational Qualifications */}
-        <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <i className="fas fa-graduation-cap text-indigo-500"></i> Education
-            </h3>
-            <button onClick={addEdu} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase">+ Add Qualification</button>
+        {/* Skills Section */}
+        <section className="simple-card p-6">
+          <Label>Skills & Expertise</Label>
+          <textarea 
+            value={data.skills.join(', ')} 
+            onChange={handleSkillsChange} 
+            className={inputStyle} 
+            rows={3}
+            placeholder="e.g. MS Office, Photoshop, Communication, Teamwork (separate by commas)"
+          />
+          <p className="text-[10px] text-gray-400 mt-2">Enter your skills separated by commas.</p>
+        </section>
+
+        {/* Education Section */}
+        <section className="simple-card p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Education</h3>
+            <button onClick={addEdu} className="text-indigo-600 text-xs font-bold hover:underline">+ Add Education</button>
           </div>
           <div className="space-y-4">
             {data.education.map((edu, idx) => (
-              <div key={edu.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative group">
-                <button onClick={() => removeEdu(idx)} className="absolute -top-2 -right-2 bg-white text-rose-500 w-6 h-6 rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i className="fas fa-times"></i></button>
+              <div key={edu.id} className="p-4 bg-gray-50 rounded-md border border-gray-200 relative group">
+                <button onClick={() => removeEdu(idx)} className="absolute top-2 right-2 text-gray-400 hover:text-red-600"><i className="fas fa-trash-alt text-xs"></i></button>
                 <div className="grid grid-cols-2 gap-3 mb-3">
-                  <input placeholder="Qual. (e.g. B.Sc)" value={edu.qualification} onChange={(e) => updateEdu(idx, 'qualification', e.target.value)} className="p-2 text-xs font-bold border-transparent bg-white rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none shadow-sm" />
-                  <input placeholder="Year" value={edu.year} onChange={(e) => updateEdu(idx, 'year', e.target.value)} className="p-2 text-xs font-bold border-transparent bg-white rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none shadow-sm" />
+                  <div>
+                    <Label>Qualification</Label>
+                    <input value={edu.qualification} onChange={(e) => updateEdu(idx, 'qualification', e.target.value)} className={inputStyle} placeholder="e.g. 10th, B.Tech" />
+                  </div>
+                  <div>
+                    <Label>Passing Year</Label>
+                    <input value={edu.year} onChange={(e) => updateEdu(idx, 'year', e.target.value)} className={inputStyle} placeholder="e.g. 2020" />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input placeholder="Board/University" value={edu.board} onChange={(e) => updateEdu(idx, 'board', e.target.value)} className="p-2 text-xs font-bold border-transparent bg-white rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none shadow-sm" />
-                  <input placeholder="Percentage/Grade" value={edu.division} onChange={(e) => updateEdu(idx, 'division', e.target.value)} className="p-2 text-xs font-bold border-transparent bg-white rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none shadow-sm" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
+                    <Label>Board / University</Label>
+                    <input value={edu.board} onChange={(e) => updateEdu(idx, 'board', e.target.value)} className={inputStyle} placeholder="e.g. CBSE, Mumbai University" />
+                  </div>
+                  <div>
+                    <Label>Percentage / Grade</Label>
+                    <input value={edu.division} onChange={(e) => updateEdu(idx, 'division', e.target.value)} className={inputStyle} placeholder="e.g. 85%" />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Personal Details */}
-        <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <i className="fas fa-fingerprint text-indigo-500"></i> Bio-Data Facts
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Father's Name</label>
-              <input value={data.personalDetails.fatherName} onChange={(e) => updatePersonal('fatherName', e.target.value)} className="w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Date of Birth</label>
-              <input value={data.personalDetails.dob} onChange={(e) => updatePersonal('dob', e.target.value)} className="w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Marital Status</label>
-              <select 
-                value={data.personalDetails.maritalStatus} 
-                onChange={(e) => updatePersonal('maritalStatus', e.target.value)} 
-                className="w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none"
-              >
-                <option value="">Status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Unmarried">Unmarried</option>
-                <option value="Divorced">Divorced</option>
-                <option value="Widowed">Widowed</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Place/City</label>
-              <input value={data.personalDetails.jobLocation} onChange={(e) => updatePersonal('jobLocation', e.target.value)} className="w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none" />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Hobbies</label>
-              <input value={data.personalDetails.hobbies} onChange={(e) => updatePersonal('hobbies', e.target.value)} className="w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none" />
-            </div>
+        {/* Work Experience Section */}
+        <section className="simple-card p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Work Experience</h3>
+            <button onClick={addWork} className="text-indigo-600 text-xs font-bold hover:underline">+ Add Work</button>
           </div>
-        </section>
-
-        {/* Footer & Declaration */}
-        <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <i className="fas fa-file-contract text-indigo-500"></i> Declaration & Date
-          </h3>
           <div className="space-y-4">
-             <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Footer Date</label>
-              <input 
-                type="text" 
-                value={data.date} 
-                onChange={(e) => updateField('date', e.target.value)}
-                className="block w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none"
-                placeholder="20/01/2026"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-500 uppercase mb-1 ml-1">Declaration Statement</label>
-              <textarea 
-                value={data.declaration} 
-                onChange={(e) => updateField('declaration', e.target.value)}
-                className="block w-full bg-slate-50 rounded-xl p-3 text-sm font-semibold focus:bg-white outline-none"
-                rows={3}
-              />
-            </div>
+            {data.workExperience.map((work, idx) => (
+              <div key={work.id} className="p-4 bg-gray-50 rounded-md border border-gray-200 relative group">
+                <button onClick={() => removeWork(idx)} className="absolute top-2 right-2 text-gray-400 hover:text-red-600"><i className="fas fa-trash-alt text-xs"></i></button>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <Label>Job Title</Label>
+                    <input value={work.jobTitle} onChange={(e) => updateWork(idx, 'jobTitle', e.target.value)} className={inputStyle} placeholder="e.g. Software Engineer" />
+                  </div>
+                  <div>
+                    <Label>Duration</Label>
+                    <input value={work.duration} onChange={(e) => updateWork(idx, 'duration', e.target.value)} className={inputStyle} placeholder="e.g. 2021 - Present" />
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <Label>Company Name</Label>
+                  <input value={work.company} onChange={(e) => updateWork(idx, 'company', e.target.value)} className={inputStyle} placeholder="e.g. Tech Solutions Pvt Ltd" />
+                </div>
+                <div>
+                  <Label>Responsibilities</Label>
+                  <textarea value={work.responsibilities} onChange={(e) => updateWork(idx, 'responsibilities', e.target.value)} className={inputStyle} rows={2} placeholder="Describe your key tasks..." />
+                </div>
+              </div>
+            ))}
+            {data.workExperience.length === 0 && <p className="text-xs text-gray-400 italic text-center py-2">No work experience added.</p>}
           </div>
         </section>
 
+        {/* Bio Details */}
+        <section className="simple-card p-6 grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">Personal Details</h3>
+          </div>
+          <div className="col-span-2">
+            <Label>Career Objective</Label>
+            <textarea 
+              value={data.personalDetails.careerObjective} 
+              onChange={(e) => updatePersonal('careerObjective', e.target.value)} 
+              className={inputStyle} 
+              rows={3}
+              placeholder="State your professional goals..."
+            />
+          </div>
+          <div>
+            <Label>Father's Name</Label>
+            <input value={data.personalDetails.fatherName} onChange={(e) => updatePersonal('fatherName', e.target.value)} className={inputStyle} />
+          </div>
+          <div>
+            <Label>Date of Birth</Label>
+            <input value={data.personalDetails.dob} onChange={(e) => updatePersonal('dob', e.target.value)} className={inputStyle} placeholder="DD/MM/YYYY" />
+          </div>
+          <div>
+            <Label>Aadhar Number</Label>
+            <input value={data.personalDetails.aadhar} onChange={(e) => updatePersonal('aadhar', e.target.value)} className={inputStyle} placeholder="12 Digit No." />
+          </div>
+          <div>
+            <Label>Marital Status</Label>
+            <select value={data.personalDetails.maritalStatus} onChange={(e) => updatePersonal('maritalStatus', e.target.value)} className={inputStyle}>
+              <option value="">Select...</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Unmarried">Unmarried</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <Label>Languages Known</Label>
+            <input value={data.personalDetails.languages} onChange={(e) => updatePersonal('languages', e.target.value)} className={inputStyle} placeholder="Hindi, English, etc." />
+          </div>
+          <div className="col-span-2">
+            <Label>Hobbies</Label>
+            <input value={data.personalDetails.hobbies} onChange={(e) => updatePersonal('hobbies', e.target.value)} className={inputStyle} placeholder="Reading, Cricket, Music, etc." />
+          </div>
+          <div>
+            <Label>Place / Location</Label>
+            <input value={data.personalDetails.jobLocation} onChange={(e) => updatePersonal('jobLocation', e.target.value)} className={inputStyle} />
+          </div>
+        </section>
+
+        {/* Declaration Section */}
+        <section className="simple-card p-6">
+          <Label>Declaration Statement</Label>
+          <textarea 
+            value={data.declaration} 
+            onChange={(e) => updateField('declaration', e.target.value)} 
+            className={inputStyle} 
+            rows={3}
+            placeholder="I hereby declare that the information provided is true to the best of my knowledge..."
+          />
+        </section>
+
+        {/* Document Date */}
+        <section className="simple-card p-6">
+          <Label>Document Date (Footer)</Label>
+          <input 
+            value={data.date} 
+            onChange={(e) => updateField('date', e.target.value)} 
+            className={inputStyle} 
+            placeholder="e.g. 25/05/2024"
+          />
+        </section>
+
+        {/* AI Action */}
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={handleAiImprove} 
+            disabled={isAiLoading}
+            className="w-full py-3 bg-gray-900 text-white rounded-md text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-50"
+          >
+            {isAiLoading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-magic"></i>}
+            Improve with AI
+          </button>
+          <p className="text-[10px] text-gray-400 text-center">Uses AI to refine your declaration and languages.</p>
+        </div>
       </div>
     </div>
   );
