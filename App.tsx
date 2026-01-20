@@ -67,7 +67,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Workspace */}
-      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden print:overflow-visible print:h-auto">
         {/* Left Side: Form Controls */}
         <aside className={`lg:w-[450px] xl:w-[500px] border-r border-slate-200 bg-white overflow-y-auto no-print scroll-smooth ${showPreview ? 'hidden lg:block' : 'w-full block'}`}>
           <div className="p-6">
@@ -76,8 +76,8 @@ const App: React.FC = () => {
         </aside>
 
         {/* Right Side: Workbench Preview */}
-        <section className={`flex-1 workbench-bg bg-slate-100 overflow-y-auto p-4 md:p-12 transition-all ${showPreview ? 'block w-full' : 'hidden lg:block'}`}>
-          <div className="max-w-fit mx-auto relative group">
+        <section className={`flex-1 workbench-bg bg-slate-100 overflow-y-auto p-4 md:p-12 transition-all print:bg-white print:p-0 print:overflow-visible ${showPreview ? 'block w-full' : 'hidden lg:block'}`}>
+          <div className="max-w-fit mx-auto relative group print:m-0">
             {/* Template Badge Float */}
             <div className="absolute -top-6 left-0 right-0 flex justify-center no-print">
                <span className="bg-slate-900 text-white text-[10px] font-black px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-700">
@@ -85,14 +85,14 @@ const App: React.FC = () => {
                </span>
             </div>
             
-            <div className="transform transition-transform duration-500 scale-[0.65] sm:scale-[0.85] md:scale-[0.95] xl:scale-100 origin-top">
+            <div className="print-reset transform transition-transform duration-500 scale-[0.65] sm:scale-[0.85] md:scale-[0.95] xl:scale-100 origin-top print:transform-none">
               <ResumePreview data={resumeData} />
             </div>
           </div>
         </section>
       </main>
 
-      {/* Mobile Template Selector Drawer (Optional enhancement) */}
+      {/* Mobile Template Selector Drawer */}
       {!showPreview && (
         <div className="lg:hidden fixed bottom-20 left-4 right-4 bg-white/80 backdrop-blur-md border border-slate-200 p-3 rounded-2xl shadow-2xl no-print flex justify-between gap-1">
           {['elegant', 'classic', 'modern', 'professional'].map(t => (
