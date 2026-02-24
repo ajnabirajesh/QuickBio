@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { ResumeData, INITIAL_DATA, TemplateType } from './types';
 import ResumeForm from './components/ResumeForm';
 import ResumePreview from './components/ResumePreview';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
 
 const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_DATA);
   const [showPreview, setShowPreview] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Sync dark mode class with body for Tailwind 'dark' variants
   useEffect(() => {
@@ -25,6 +29,43 @@ const App: React.FC = () => {
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
+  const handleSaveResume = () => {
+    const stored = localStorage.getItem('quickbio_saved_resumes');
+    let resumes = [];
+    if (stored) {
+      try {
+        resumes = JSON.parse(stored);
+      } catch (e) {
+        console.error("Failed to parse saved resumes", e);
+      }
+    }
+    
+    const newResume = {
+      id: Date.now().toString(),
+      data: resumeData,
+      savedAt: new Date().toISOString()
+    };
+    
+    resumes.push(newResume);
+    localStorage.setItem('quickbio_saved_resumes', JSON.stringify(resumes));
+    alert('Resume saved successfully! Admin can view it in the dashboard.');
+  };
+
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+    setShowAdminLogin(false);
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+  };
+
+  const handleViewResumeFromAdmin = (data: ResumeData) => {
+    setResumeData(data);
+    setIsAdmin(false);
+    setShowPreview(true);
+  };
+
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-gray-50 text-gray-900'}`}>
       {/* Top Navigation */}
@@ -38,20 +79,24 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Template Selector (Desktop) */}
-            <div className="hidden lg:flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
-              {['elegant', 'classic', 'modern', 'professional'].map((t) => (
-                <button 
-                  key={t}
-                  onClick={() => handleTemplateChange(t as TemplateType)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all ${resumeData.template === t ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+            {!isAdmin && (
+              <>
+                {/* Template Selector (Desktop) */}
+                <div className="hidden lg:flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
+                  {['elegant', 'classic', 'modern', 'professional'].map((t) => (
+                    <button 
+                      key={t}
+                      onClick={() => handleTemplateChange(t as TemplateType)}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all ${resumeData.template === t ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
 
-            <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden sm:block"></div>
+              </>
+            )}
 
             {/* Dark Mode Toggle */}
             <button 
@@ -62,48 +107,91 @@ const App: React.FC = () => {
               {isDarkMode ? <i className="fas fa-sun text-lg"></i> : <i className="fas fa-moon text-lg"></i>}
             </button>
 
-            <button 
-              onClick={handlePrint}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-            >
-              <i className="fas fa-print"></i>
-              <span className="hidden sm:inline">Print / Save</span>
-            </button>
+            {!isAdmin ? (
+              <>
+                <button 
+                  onClick={handleSaveResume}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 hidden sm:flex"
+                  title="Save Resume for Admin"
+                >
+                  <i className="fas fa-save"></i>
+                  <span>Save</span>
+                </button>
+
+                <button 
+                  onClick={handlePrint}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                >
+                  <i className="fas fa-print"></i>
+                  <span className="hidden sm:inline">Print / Save</span>
+                </button>
+
+                <button 
+                  onClick={() => setShowAdminLogin(true)}
+                  className="p-2 text-gray-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
+                  title="Admin Login"
+                >
+                  <i className="fas fa-user-shield text-lg"></i>
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={handleAdminLogout}
+                className="bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-300 dark:hover:bg-slate-600 active:scale-95 transition-all flex items-center gap-2"
+              >
+                <i className="fas fa-sign-out-alt"></i>
+                <span className="hidden sm:inline">Exit Admin</span>
+              </button>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Workspace */}
-      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-65px)] overflow-hidden print:overflow-visible print:h-auto">
-        
-        {/* Editor */}
-        <aside className={`lg:w-[480px] bg-white dark:bg-slate-900 overflow-y-auto no-print border-r border-gray-200 dark:border-slate-800 transition-colors duration-300 ${showPreview ? 'hidden lg:block' : 'w-full block'}`}>
-          <div className="p-6 md:p-8">
-            <ResumeForm data={resumeData} onChange={setResumeData} />
-          </div>
-        </aside>
-
-        {/* Preview Area */}
-        <section className={`flex-1 preview-area overflow-y-auto p-4 md:p-12 flex justify-center transition-all print:bg-white print:p-0 print:overflow-visible ${showPreview ? 'block w-full' : 'hidden lg:block'}`}>
-          <div className="max-w-fit mx-auto print:m-0">
-            <div className="print-reset transform transition-all scale-[0.45] sm:scale-[0.6] md:scale-[0.75] xl:scale-90 2xl:scale-100 origin-top print:transform-none">
-              <ResumePreview data={resumeData} />
+      {isAdmin ? (
+        <AdminDashboard onLogout={handleAdminLogout} onViewResume={handleViewResumeFromAdmin} />
+      ) : (
+        <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-65px)] overflow-hidden print:overflow-visible print:h-auto">
+          
+          {/* Editor */}
+          <aside className={`lg:w-[480px] bg-white dark:bg-slate-900 overflow-y-auto no-print border-r border-gray-200 dark:border-slate-800 transition-colors duration-300 ${showPreview ? 'hidden lg:block' : 'w-full block'}`}>
+            <div className="p-6 md:p-8">
+              <ResumeForm data={resumeData} onChange={setResumeData} />
             </div>
-          </div>
-        </section>
-      </main>
+          </aside>
+
+          {/* Preview Area */}
+          <section className={`flex-1 preview-area overflow-y-auto p-4 md:p-12 flex justify-center transition-all print:bg-white print:p-0 print:overflow-visible ${showPreview ? 'block w-full' : 'hidden lg:block'}`}>
+            <div className="max-w-fit mx-auto print:m-0">
+              <div className="print-reset transform transition-all scale-[0.45] sm:scale-[0.6] md:scale-[0.75] xl:scale-90 2xl:scale-100 origin-top print:transform-none">
+                <ResumePreview data={resumeData} />
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
 
       {/* Mobile Actions */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 p-2 flex justify-around lg:hidden no-print z-50 shadow-up">
-        <button onClick={() => setShowPreview(false)} className={`flex-1 py-2 flex flex-col items-center gap-1 transition-colors ${!showPreview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
-          <i className="fas fa-edit text-lg"></i>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Details</span>
-        </button>
-        <button onClick={() => setShowPreview(true)} className={`flex-1 py-2 flex flex-col items-center gap-1 transition-colors ${showPreview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
-          <i className="fas fa-eye text-lg"></i>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Preview</span>
-        </button>
-      </footer>
+      {!isAdmin && (
+        <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 p-2 flex justify-around lg:hidden no-print z-50 shadow-up">
+          <button onClick={() => setShowPreview(false)} className={`flex-1 py-2 flex flex-col items-center gap-1 transition-colors ${!showPreview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
+            <i className="fas fa-edit text-lg"></i>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Details</span>
+          </button>
+          <button onClick={() => setShowPreview(true)} className={`flex-1 py-2 flex flex-col items-center gap-1 transition-colors ${showPreview ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
+            <i className="fas fa-eye text-lg"></i>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Preview</span>
+          </button>
+        </footer>
+      )}
+
+      {/* Admin Login Modal */}
+      {showAdminLogin && (
+        <AdminLogin 
+          onLogin={handleAdminLogin} 
+          onClose={() => setShowAdminLogin(false)} 
+        />
+      )}
     </div>
   );
 };
